@@ -1,0 +1,32 @@
+name: CI/CD Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**" # 👈 Solo se activa con cambios en la carpeta `frontend`
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20" # 👈 Versión de Node.js
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./frontend # 👈 Ejecuta comandos en el directorio del proyecto
+
+      - name: Run build and tests
+        run: |
+          npm run build
+          npm test
+        working-directory: ./frontend
+
+  # Agrega un job de despliegue aquí, si es necesario.

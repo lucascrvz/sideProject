@@ -1,0 +1,30 @@
+name: CI/CD Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x" # 👈 Versión de .NET
+
+      - name: Restore dependencies
+        run: dotnet restore ./backend/SideProject.sln
+
+      - name: Build and Test
+        run: |
+          dotnet build ./backend/SideProject.sln --no-restore
+          dotnet test ./backend/SideProject.sln --no-build
+
+  # Agrega un job de despliegue aquí, si es necesario.

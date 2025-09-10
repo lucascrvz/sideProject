@@ -1,0 +1,6 @@
+@SideProject_HostAddress = http://localhost:5225
+
+GET {{SideProject_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
