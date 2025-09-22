@@ -1,4 +1,4 @@
-# 📌 Requerimientos del Proyecto - FinanzasApp
+# 📌 Project Requirements - FinanzasApp
 
 Este documento define los requerimientos funcionales y no funcionales del proyecto **FinanzasApp**, una aplicación para la gestión personal de finanzas.
 
