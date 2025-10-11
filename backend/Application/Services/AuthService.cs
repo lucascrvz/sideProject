@@ -12,20 +12,20 @@ namespace Application.Services
     {
         private readonly IConfiguration _config;
 
-        private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
+        private readonly PasswordHasher<Usuario> _passwordHasher = new PasswordHasher<Usuario>();
 
         public AuthService(IConfiguration config)
         {
             _config = config;
         }
 
-        public string HashPassword(User user, string plainPassword)
+        public string HashPassword(Usuario user, string plainPassword)
         {
             return _passwordHasher.HashPassword(user, plainPassword);
         }
 
         public PasswordVerificationResult VerifyPassword(
-            User user,
+            Usuario user,
             string plainPassword,
             string hashedPassword
         )

@@ -1,5 +1,6 @@
 using System.Text;
-using Application.Services;
+using Application;
+using Infrastructure;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -7,52 +8,59 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 builder.Services.AddControllers();
 
-builder
-    .Services.AddAuthentication(options =>
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    jwtSettings["Key"]
-                        ?? throw new InvalidOperationException("Clave JWT no configurada")
-                )
-            ),
-        };
-    });
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("Clave JWT no configurada"))
+        ),
+    };
+});
 
 builder.Services.AddAuthorization();
 
-// Agregar Swagger para documentación de la API
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<AuthService>();
 
-// Agregar DbContext con conexión a PostgreSQL
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+// -------------------------
+// 🔹 Inyección de dependencias
+// -------------------------
+
+// 1️⃣ Infrastructure (repositorios, DbContext)
+builder.Services.AddInfrastructure(
+    builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new InvalidOperationException("Cadena de conexión no encontrada")
+    );
+
+// 2️⃣ Application (servicios de negocio)
+builder.Services.AddApplication();
 
 var app = builder.Build();
 
+// -------------------------
+// Migraciones DB con reintentos
+// -------------------------
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var retries = 10;
     var delay = TimeSpan.FromSeconds(5);
 
@@ -71,6 +79,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// -------------------------
+// Middleware
+// -------------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -85,11 +96,8 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

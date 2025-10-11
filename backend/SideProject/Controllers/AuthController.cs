@@ -10,56 +10,56 @@ using Microsoft.EntityFrameworkCore;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-    private readonly PasswordHasher<User> _passwordHasher;
+    private readonly AppDbContext _context;
+    private readonly PasswordHasher<Usuario> _passwordHasher;
     private readonly AuthService _authService;
 
-    public AuthController(ApplicationDbContext context, AuthService authService)
+    public AuthController(AppDbContext context, AuthService authService)
     {
         _context = context;
-        _passwordHasher = new PasswordHasher<User>();
+        _passwordHasher = new PasswordHasher<Usuario>();
         _authService = authService;
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] User userDto)
+    public async Task<IActionResult> Register([FromBody] Usuario UsuarioDto)
     {
-        if (await _context.Users.AnyAsync(u => u.Username == userDto.Username))
+        if (await _context.Usuarios.AnyAsync(u => u.Nombre == UsuarioDto.Nombre))
             return BadRequest("El nombre de usuario ya está en uso.");
 
-        var user = new User { Username = userDto.Username };
+        var Usuario = new Usuario { Nombre = UsuarioDto.Nombre };
 
-        user.Password = _passwordHasher.HashPassword(user, userDto.Password);
+        Usuario.PasswordHash = _passwordHasher.HashPassword(Usuario, UsuarioDto.PasswordHash);
 
-        var token = _authService.GenerateJwtToken(user.Username);
+        var token = _authService.GenerateJwtToken(Usuario.Nombre);
 
-        _context.Users.Add(user);
+        _context.Usuarios.Add(Usuario);
         await _context.SaveChangesAsync();
 
         return CreatedAtAction(
-            nameof(GetUser),
-            new { id = user.Id },
+            nameof(GetUsuario),
+            new { id = Usuario.IdUsuario},
             new
             {
-                user.Id,
-                user.Username,
+                Usuario.IdUsuario,
+                Usuario.Nombre,
                 Token = token,
             }
         );
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] User loginDto)
+    public async Task<IActionResult> Login([FromBody] Usuario loginDto)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginDto.Username);
+        var Usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Nombre == loginDto.Nombre);
 
-        if (user == null)
+        if (Usuario == null)
             return Unauthorized("Usuario o contraseña incorrectos.");
 
         var verificationResult = _passwordHasher.VerifyHashedPassword(
-            user,
-            user.Password,
-            loginDto.Password
+            Usuario,
+            Usuario.PasswordHash,
+            loginDto.PasswordHash
         );
 
         if (verificationResult == PasswordVerificationResult.Failed)
@@ -68,20 +68,20 @@ public class AuthController : ControllerBase
         return Ok(
             new
             {
-                user.Id,
-                user.Username,
-                Token = _authService.GenerateJwtToken(user.Username),
+                Usuario.IdUsuario,
+                Usuario.Nombre,
+                Token = _authService.GenerateJwtToken(Usuario.Nombre),
             }
         );
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser(int id)
+    public async Task<IActionResult> GetUsuario(int id)
     {
-        var user = await _context.Users.FindAsync(id);
-        if (user == null)
+        var Usuario = await _context.Usuarios.FindAsync(id);
+        if (Usuario == null)
             return NotFound();
 
-        return Ok(new { user.Id, user.Username });
+        return Ok(new { Usuario.IdUsuario, Usuario.Nombre });
     }
 }
