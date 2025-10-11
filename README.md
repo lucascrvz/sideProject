@@ -1,6 +1,6 @@
 # sideProject
 
-Proyecto full-stack de ejemplo (API .NET 9 + Angular 17) para manejo de presupuestos y cuotas.
+Proyecto full-stack de ejemplo (API .NET 9 + Angular 17) para manejo de presupuestos personales.
 
 ## Contenido
 
@@ -108,7 +108,7 @@ dotnet ef database update --project ../Infrastructure --startup-project .
 
 Nota: Ajusta los argumentos si tu estructura de proyectos difiere.
 
-## Tests
+## Tests (TO-DO)
 
 - Backend: hay un proyecto de tests en `backend/Tests`. Ejecuta:
 
@@ -140,17 +140,4 @@ Usa Swagger para ver la documentación interactiva (`/swagger`) cuando ejecutes 
 - Asumí variables JWT comunes; reemplaza `Secret` por una clave segura en producción.
 - Ajusta puertos y URLs en `appsettings` o `launchSettings.json` según necesites.
 
-## Preguntas frecuentes
-
-- ¿Dónde está la lógica de negocio? -> `backend/Application/Services`.
-- ¿Dónde están las entidades? -> `backend/Domain/Entities`.
-
 ---
-
-Si quieres, puedo:
-
-- Agregar ejemplos concretos de llamadas curl para los endpoints principales.
-- Añadir badges (build, coverage) si tienes CI configurado.
-- Documentar variables de entorno exactas tomando los valores de `appsettings.Development.json`.
-
-Avísame qué prefieres y lo agrego.
