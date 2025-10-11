@@ -1,13 +1,15 @@
 {
   "name": "side-project",
   "version": "0.0.0",
+
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "serve:ssr:sideProject": "node dist/side-project/server/server.mjs"
+    "build:ssr": "ng build && ng run sideProject:server",
+    "serve:ssr": "node dist/server/main.js",
+    "lint": "ng lint",
+    "test": "ng test"
   },
   "private": true,
   "dependencies": {

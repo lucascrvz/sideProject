@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sideproject
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    container_name: sideproject-backend
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Database=sideproject;Username=postgres;Password=postgres
+      - DOTNET_ENVIRONMENT=Development
+    depends_on:
+      - db
+    ports:
+      - "5000:8080"
+
+  frontend:
+    build: ./frontend/sideProject
+    container_name: sideproject-frontend
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+
+volumes:
+  postgres_data:
