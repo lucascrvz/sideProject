@@ -1,87 +1,36 @@
-using System.Threading.Tasks;
+using Application.DTOs;
 using Application.Services;
-using Domain.Entities;
-using Infrastructure.Data;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly AppDbContext _context;
-    private readonly PasswordHasher<Usuario> _passwordHasher;
     private readonly AuthService _authService;
 
-    public AuthController(AppDbContext context, AuthService authService)
+    public AuthController(AuthService authService)
     {
-        _context = context;
-        _passwordHasher = new PasswordHasher<Usuario>();
         _authService = authService;
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] Usuario UsuarioDto)
+    public async Task<IActionResult> Register([FromBody] UsuarioDto dto)
     {
-        if (await _context.Usuarios.AnyAsync(u => u.Nombre == UsuarioDto.Nombre))
-            return BadRequest("El nombre de usuario ya está en uso.");
+        var result = await _authService.RegisterAsync(dto);
+        if (!result.Success)
+            return BadRequest(result.Message);
 
-        var Usuario = new Usuario { Nombre = UsuarioDto.Nombre };
-
-        Usuario.PasswordHash = _passwordHasher.HashPassword(Usuario, UsuarioDto.PasswordHash);
-
-        var token = _authService.GenerateJwtToken(Usuario.Nombre);
-
-        _context.Usuarios.Add(Usuario);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(
-            nameof(GetUsuario),
-            new { id = Usuario.IdUsuario},
-            new
-            {
-                Usuario.IdUsuario,
-                Usuario.Nombre,
-                Token = token,
-            }
-        );
+        return Ok(new { dto.Nombre, Token = result.Token });
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] Usuario loginDto)
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var Usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Nombre == loginDto.Nombre);
+        var result = await _authService.LoginAsync(dto);
+        if (!result.Success)
+            return Unauthorized("Usuario o contraseña incorrectos");
 
-        if (Usuario == null)
-            return Unauthorized("Usuario o contraseña incorrectos.");
-
-        var verificationResult = _passwordHasher.VerifyHashedPassword(
-            Usuario,
-            Usuario.PasswordHash,
-            loginDto.PasswordHash
-        );
-
-        if (verificationResult == PasswordVerificationResult.Failed)
-            return Unauthorized("Usuario o contraseña incorrectos.");
-
-        return Ok(
-            new
-            {
-                Usuario.IdUsuario,
-                Usuario.Nombre,
-                Token = _authService.GenerateJwtToken(Usuario.Nombre),
-            }
-        );
-    }
-
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetUsuario(int id)
-    {
-        var Usuario = await _context.Usuarios.FindAsync(id);
-        if (Usuario == null)
-            return NotFound();
-
-        return Ok(new { Usuario.IdUsuario, Usuario.Nombre });
+        return Ok(new { dto.Nombre, Token = result.Token });
     }
 }

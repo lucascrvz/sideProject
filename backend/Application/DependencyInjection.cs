@@ -8,6 +8,7 @@ namespace Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<PresupuestoService>(); // o IPresupuestoService si creas interfaz
+            services.AddScoped<AuthService>();
             return services;
         }
     }
