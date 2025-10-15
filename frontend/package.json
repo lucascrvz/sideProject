@@ -4,15 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "cd gestiongastos && npm run dev",
+    "build": "cd gestiongastos && npm run build",
+    "start": "cd gestiongastos && npm run start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.15.1",
+  "packageManager": "npm",
   "dependencies": {
-    "@angular/cli": "^17.3.17",
-    "angular": "^1.8.3",
-    "ng": "^0.0.0"
+    "next": "^15.5.5",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   }
 }

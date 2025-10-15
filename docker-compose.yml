@@ -27,12 +27,12 @@ services:
       - "5000:8080"
 
   frontend:
-    build: ./frontend/sideProject
+    build: ./frontend/gestiongastos
     container_name: sideproject-frontend
     depends_on:
       - backend
     ports:
-      - "4200:80"
+      - "3000:3000"
 
 volumes:
   postgres_data:
