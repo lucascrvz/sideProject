@@ -1,0 +1,19 @@
+FROM node:20
+WORKDIR /app
+
+# Copiar solo archivos de dependencias para aprovechar la cache
+COPY package*.json ./
+COPY next.config.ts ./
+COPY tsconfig.json ./
+COPY postcss.config.mjs ./
+
+# Instalar dependencias
+RUN npm install
+
+# Exponer el puerto de desarrollo
+EXPOSE 3000
+
+# Iniciar Next.js en modo desarrollo (la app se montará como volumen)
+CMD ["npm", "run", "dev"]
+
+
